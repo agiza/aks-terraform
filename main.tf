@@ -85,10 +85,10 @@ resource "null_resource" "provision" {
   }
 
   /**
-                                                                                                                                                                                            provisioner "local-exec" {
-                                                                                                                                                                                              command = "echo "$(terraform output kube_config)" > ~/.kube/azurek8s && export KUBECONFIG=~/.kube/azurek8s"
-                                                                                                                                                                                            } 
-                                                                                                                                                                                          **/
+                                                                                                                                                                                              provisioner "local-exec" {
+                                                                                                                                                                                                command = "echo "$(terraform output kube_config)" > ~/.kube/azurek8s && export KUBECONFIG=~/.kube/azurek8s"
+                                                                                                                                                                                              } 
+                                                                                                                                                                                            **/
   provisioner "local-exec" {
     command = "helm init --upgrade"
   }
@@ -108,10 +108,10 @@ resource "null_resource" "provision" {
   }
 
   /**
-                                                                                                                                                                              provisioner "local-exec" {
-                                                                                                                                                                                command = "kubectl create -f azure-load-balancer.yaml"
-                                                                                                                                                                              }
-                                                                                                                                                                      **/
+                                                                                                                                                                                provisioner "local-exec" {
+                                                                                                                                                                                  command = "kubectl create -f azure-load-balancer.yaml"
+                                                                                                                                                                                }
+                                                                                                                                                                        **/
   provisioner "local-exec" {
     command = "helm repo add azure-samples https://azure-samples.github.io/helm-charts/ && helm repo add gitlab https://charts.gitlab.io/ && helm repo add ibm-charts https://raw.githubusercontent.com/IBM/charts/master/repo/stable/ && helm repo add bitnami https://charts.bitnami.com/bitnami"
   }
@@ -120,19 +120,20 @@ resource "null_resource" "provision" {
     command = "helm repo update"
   }
 
-  provisioner "local-exec" {
-    command = "helm install stable/nginx-ingress --namespace kube-system"
-  }
-
+  /**
+    provisioner "local-exec" {
+      command = "helm install stable/nginx-ingress --namespace kube-system"
+    }
+  **/
   provisioner "local-exec" {
     command = "helm install azure-samples/aks-helloworld"
   }
 
   /**
-    provisioner "local-exec" {
-      command = "helm install stable/cert-manager  --set ingressShim.defaultIssuerName=letsencrypt-staging  --set ingressShim.defaultIssuerKind=ClusterIssuer --set rbac.create=false  --set serviceAccount.create=false"
-    }
-  **/
+      provisioner "local-exec" {
+        command = "helm install stable/cert-manager  --set ingressShim.defaultIssuerName=letsencrypt-staging  --set ingressShim.defaultIssuerKind=ClusterIssuer --set rbac.create=false  --set serviceAccount.create=false"
+      }
+    **/
   provisioner "local-exec" {
     command = "wget -qO- https://azuredraft.blob.core.windows.net/draft/draft-v0.15.0-linux-amd64.tar.gz | tar xvz"
   }
@@ -199,9 +200,9 @@ resource "null_resource" "kube-prometheus-package" {
 
 resource "null_resource" "kube-racecheck" {
   /**
-                                          Kubernetes Race condition check for older than 1.11.2 version- https://github.com/kubernetes/kubernetes/issues/62725
-                                          This is specific when CRD status is complete but API Server is not actually available. Kicks in for kube-prometheus for older than 11.1.2 k8s version
-                                          **/
+                                            Kubernetes Race condition check for older than 1.11.2 version- https://github.com/kubernetes/kubernetes/issues/62725
+                                            This is specific when CRD status is complete but API Server is not actually available. Kicks in for kube-prometheus for older than 11.1.2 k8s version
+                                            **/
   provisioner "local-exec" {
     command = <<EOF
     kube_major=$(echo ${var.kube_version}|cut -d'.' -f 1-2)
